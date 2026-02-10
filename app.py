@@ -1,54 +1,56 @@
 import streamlit as st
-import os
-import requests
 
 st.set_page_config(page_title="KisanSense GenAI", layout="centered")
 
 st.title("🌾 KisanSense GenAI")
 st.write("AI-Powered Agricultural Advisory Assistant")
 
-API_KEY = os.getenv("GEMINI_API_KEY")
-
 query = st.text_input("Enter your farming question")
 
+def agri_advice(q):
+    q = q.lower()
+
+    if "aphid" in q:
+        return """🔹 **Aphids Control (Expert Advisory)**  
+• Spray Neem Oil 3–5 ml per litre of water  
+• Use Imidacloprid 0.3 ml per litre if infestation is severe  
+• Avoid excess nitrogen fertilizer  
+• Encourage natural predators like ladybird beetles"""
+
+    elif "fertilizer" in q:
+        return """🔹 **Fertilizer Recommendation**  
+• Apply fertilizer based on crop growth stage  
+• Use NPK in balanced ratio  
+• Avoid over-fertilization  
+• Prefer soil testing before application"""
+
+    elif "pest" in q:
+        return """🔹 **Pest Management Advice**  
+• Monitor crop regularly  
+• Use integrated pest management (IPM)  
+• Prefer bio-pesticides first  
+• Use chemical pesticides only if required"""
+
+    elif "scheme" in q or "pm kisan" in q:
+        return """🔹 **Government Scheme Guidance**  
+• PM-Kisan provides ₹6000/year  
+• Apply via pmkisan.gov.in  
+• Aadhaar and land records required"""
+
+    else:
+        return """🔹 **General Agricultural Advice**  
+• Follow recommended practices  
+• Maintain crop hygiene  
+• Consult local agriculture officer  
+• Use certified seeds"""
+
 if query:
-    with st.spinner("Thinking like an agriculture expert..."):
+    with st.spinner("Analyzing like an agriculture expert..."):
+        answer = agri_advice(query)
 
-        url = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent"
+    st.subheader("🤖 Advisory Recommendation")
+    st.success(answer)
 
-        headers = {
-            "Content-Type": "application/json",
-            "x-goog-api-key": API_KEY
-        }
-
-        payload = {
-            "contents": [
-                {
-                    "role": "user",
-                    "parts": [
-                        {
-                            "text": f"""
-You are an expert agricultural advisor in India.
-Answer in simple, practical language.
-
-Question: {query}
-"""
-                        }
-                    ]
-                }
-            ]
-        }
-
-        response = requests.post(url, headers=headers, json=payload)
-
-        if response.status_code == 200:
-            data = response.json()
-            answer = data["candidates"][0]["content"]["parts"][0]["text"]
-            st.subheader("🤖 AI Recommendation")
-            st.success(answer)
-        else:
-            st.error("Gemini API Error")
-            st.code(response.text)
 
 
 
