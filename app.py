@@ -2,7 +2,7 @@ import streamlit as st
 import os
 import google.generativeai as genai
 
-# Page config
+# Page configuration
 st.set_page_config(page_title="KisanSense GenAI", layout="centered")
 
 st.title("🌾 KisanSense GenAI")
@@ -11,8 +11,8 @@ st.write("AI-Powered Agricultural Advisory Assistant")
 # Configure Gemini using Streamlit Secrets
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-# ✅ UPDATED MODEL (FIXES ERROR)
-model = genai.GenerativeModel("models/gemini-1.5-flash")
+# ✅ CORRECT MODEL NAME FOR google-generativeai SDK
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 query = st.text_input("Enter your farming question")
 
@@ -29,6 +29,9 @@ Question: {query}
 
     st.subheader("🤖 AI Recommendation")
     st.success(response.text)
+
+
+
 
 
 
