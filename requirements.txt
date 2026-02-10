@@ -1,7 +1,4 @@
 streamlit
-pandas
-numpy
-faiss-cpu
-sentence-transformers
-google-generativeai
-python-dotenv
+requests
+
+
