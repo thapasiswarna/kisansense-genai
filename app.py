@@ -14,8 +14,7 @@ query = st.text_input("Enter your farming question")
 if query:
     with st.spinner("Thinking like an agriculture expert..."):
 
-       url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent"
-
+        url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent"
 
         headers = {
             "Content-Type": "application/json",
@@ -50,6 +49,7 @@ Question: {query}
         else:
             st.error("Gemini API Error")
             st.code(response.text)
+
 
 
 
