@@ -1,170 +1,163 @@
 import streamlit as st
 
-# -------------------------------------------------
-# Page Config
-# -------------------------------------------------
+# ---------------- CONFIG ----------------
 st.set_page_config(
-    page_title="KisanSense GenAI",
+    page_title="KisanSense Platform",
     page_icon="🌾",
     layout="wide"
 )
 
-# -------------------------------------------------
-# Sidebar Navigation
-# -------------------------------------------------
-st.sidebar.title("🌾 KisanSense GenAI")
-page = st.sidebar.radio(
-    "Navigate",
-    ["Home", "Chatbot", "Crop Advisory", "Schemes", "About"]
-)
+# ---------------- SESSION STATE ----------------
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
 
-st.sidebar.caption("AI for Farmers 🌱")
+if "farmer" not in st.session_state:
+    st.session_state.farmer = {}
 
-# -------------------------------------------------
-# Translation & Advisory Logic
-# -------------------------------------------------
-def get_advice(query, lang):
-    q = query.lower()
+# ---------------- LOGIN PAGE ----------------
+def login_page():
+    st.markdown("## 🌾 KisanSense – Farmer Login")
 
-    responses = {
-        "aphids": {
-            "English": "Spray Neem Oil 3–5 ml per litre. Use Imidacloprid if infestation is severe. Avoid excess nitrogen fertilizer.",
-            "Telugu": "నీమ్ ఆయిల్ 3–5 మి.లీ లీటర్ నీటిలో కలిపి పిచికారీ చేయాలి. ఎక్కువ నత్రజని ఎరువులు వేయకండి.",
-            "Hindi": "नीम तेल 3–5 मि.ली. प्रति लीटर पानी में छिड़कें। अधिक नाइट्रोजन से बचें।",
-            "Tamil": "நீம் எண்ணெய் 3–5 மி.லி. ஒரு லிட்டர் தண்ணீரில் தெளிக்கவும்."
+    col1, col2 = st.columns(2)
+    with col1:
+        name = st.text_input("Farmer Name")
+        village = st.text_input("Village")
+        crop = st.selectbox("Primary Crop", ["Rice", "Wheat", "Cotton", "Maize"])
+    with col2:
+        phone = st.text_input("Mobile Number")
+        language = st.selectbox("Preferred Language", ["English", "Telugu", "Hindi", "Tamil"])
+
+    if st.button("Login"):
+        st.session_state.logged_in = True
+        st.session_state.farmer = {
+            "name": name,
+            "village": village,
+            "crop": crop,
+            "phone": phone,
+            "language": language
+        }
+        st.rerun()
+
+# ---------------- TRANSLATION LOGIC ----------------
+def translate(text, lang):
+    translations = {
+        "Telugu": {
+            "Welcome": "స్వాగతం",
+            "Ask Question": "మీ ప్రశ్నను అడగండి"
+        },
+        "Hindi": {
+            "Welcome": "स्वागत है",
+            "Ask Question": "अपना प्रश्न पूछें"
+        },
+        "Tamil": {
+            "Welcome": "வரவேற்கிறோம்",
+            "Ask Question": "உங்கள் கேள்வியை கேளுங்கள்"
         }
     }
+    return translations.get(lang, {}).get(text, text)
 
-    if "aphid" in q or "ఆఫిడ్" in q or "एफिड" in q or "அஃபிட" in q:
-        return responses["aphids"][lang]
-
+# ---------------- AI ADVISORY ----------------
+def ai_advisory(q, lang):
+    q = q.lower()
+    if "aphid" in q:
+        return {
+            "English": "Spray Neem Oil 3–5 ml per litre. Avoid excess nitrogen.",
+            "Telugu": "నీమ్ ఆయిల్ 3–5 మి.లీ లీటర్ నీటిలో పిచికారీ చేయాలి.",
+            "Hindi": "नीम तेल 3–5 मि.ली. प्रति लीटर पानी में छिड़कें।",
+            "Tamil": "நீம் எண்ணெய் 3–5 மி.லி. தெளிக்கவும்."
+        }[lang]
     return {
-        "English": "Please consult your local agriculture officer for this issue.",
-        "Telugu": "ఈ సమస్యకు స్థానిక వ్యవసాయ అధికారిని సంప్రదించండి.",
-        "Hindi": "इस समस्या के लिए स्थानीय कृषि अधिकारी से संपर्क करें।",
-        "Tamil": "இந்த பிரச்சனைக்கு அருகிலுள்ள வேளாண் அதிகாரியை அணுகவும்."
+        "English": "Please consult local agriculture officer.",
+        "Telugu": "స్థానిక వ్యవసాయ అధికారిని సంప్రదించండి.",
+        "Hindi": "स्थानीय कृषि अधिकारी से संपर्क करें।",
+        "Tamil": "உள்ளூர் வேளாண் அதிகாரியை அணுகவும்."
     }[lang]
 
-# -------------------------------------------------
-# HOME PAGE
-# -------------------------------------------------
-if page == "Home":
-    st.markdown("## 🌾 Empowering Farmers with AI")
-    st.write(
-        "KisanSense GenAI is a smart agricultural assistance platform designed "
-        "to help farmers with crop advisory, pest control, fertilizer guidance, "
-        "and government schemes — all in their native language."
+# ---------------- DASHBOARD ----------------
+def dashboard():
+    farmer = st.session_state.farmer
+    lang = farmer["language"]
+
+    st.sidebar.title("🌾 KisanSense")
+    page = st.sidebar.radio(
+        "Menu",
+        ["Dashboard", "AI Assistant", "Crop Recommendation", "Disease Detection",
+         "Schemes", "Weather & Advisory", "Notifications", "About", "Contact"]
     )
 
-    st.divider()
+    # ---------------- DASHBOARD HOME ----------------
+    if page == "Dashboard":
+        st.markdown(f"## {translate('Welcome', lang)}, {farmer['name']} 👋")
+        st.info(f"Village: {farmer['village']} | Crop: {farmer['crop']}")
 
-    col1, col2, col3 = st.columns(3)
+        col1, col2, col3 = st.columns(3)
+        col1.success("🌱 Crop Advisory")
+        col2.info("🐛 Disease Detection")
+        col3.warning("🤖 AI Assistant")
 
-    with col1:
-        st.success("🌱 Crop Advisory\n\nStage-wise recommendations")
+    # ---------------- AI ASSISTANT ----------------
+    if page == "AI Assistant":
+        st.header("🤖 AI Assistant")
+        q = st.text_input(translate("Ask Question", lang))
+        if q:
+            st.success(ai_advisory(q, lang))
 
-    with col2:
-        st.info("🐛 Pest & Disease Help\n\nInstant expert guidance")
+    # ---------------- CROP RECOMMENDATION ----------------
+    if page == "Crop Recommendation":
+        st.header("🌱 Recommended Crops")
+        st.write("Based on soil, season, and region")
+        st.success("Recommended: Rice, Pulses, Millets")
 
-    with col3:
-        st.warning("🏛️ Government Schemes\n\nPM-Kisan & subsidies")
+    # ---------------- DISEASE DETECTION ----------------
+    if page == "Disease Detection":
+        st.header("📸 Crop Disease Detection")
+        st.file_uploader("Upload leaf image (AI-ready module)")
+        st.info("Disease detection model will analyze this image")
 
-    st.divider()
+    # ---------------- SCHEMES ----------------
+    if page == "Schemes":
+        st.header("🏛️ Government Schemes")
+        st.markdown("""
+        **PM-Kisan Samman Nidhi**
+        - ₹6000 per year  
+        - Direct Bank Transfer  
 
-    st.markdown("### 💡 Why KisanSense?")
-    st.write(
-        "- Simple and farmer-friendly\n"
-        "- Works even without external AI APIs\n"
-        "- Multilingual and inclusive\n"
-        "- Designed for rural accessibility"
-    )
+        **Crop Insurance (PMFBY)**
+        - Protection from crop loss
+        """)
 
-# -------------------------------------------------
-# CHATBOT PAGE
-# -------------------------------------------------
-if page == "Chatbot":
-    st.header("💬 KisanSense Chatbot")
-    st.caption("Ask questions in your native language")
+    # ---------------- WEATHER ----------------
+    if page == "Weather & Advisory":
+        st.header("🌦️ Weather & Advisory")
+        st.warning("Weather integration ready")
+        st.write("Advisory: Avoid spraying pesticides today")
 
-    language = st.selectbox(
-        "Select your language",
-        ["English", "Telugu", "Hindi", "Tamil"]
-    )
+    # ---------------- NOTIFICATIONS ----------------
+    if page == "Notifications":
+        st.header("🔔 Notifications")
+        st.info("No new alerts")
 
-    if "chat" not in st.session_state:
-        st.session_state.chat = []
+    # ---------------- ABOUT ----------------
+    if page == "About":
+        st.header("ℹ️ About KisanSense")
+        st.write("""
+        KisanSense is a farmer-first digital platform combining AI,
+        advisory systems, and multilingual interaction.
+        """)
 
-    user_query = st.chat_input("Type your farming question here...")
+    # ---------------- CONTACT ----------------
+    if page == "Contact":
+        st.header("📞 Contact")
+        st.write("Email: support@kisansense.ai")
+        st.write("Helpline: 1800-000-000")
 
-    if user_query:
-        st.session_state.chat.append(("user", user_query))
-        bot_reply = get_advice(user_query, language)
-        st.session_state.chat.append(("bot", bot_reply))
+# ---------------- MAIN ----------------
+if not st.session_state.logged_in:
+    login_page()
+else:
+    dashboard()
 
-    for role, msg in st.session_state.chat:
-        if role == "user":
-            st.chat_message("user").write(msg)
-        else:
-            st.chat_message("assistant").write(msg)
 
-# -------------------------------------------------
-# CROP ADVISORY PAGE
-# -------------------------------------------------
-if page == "Crop Advisory":
-    st.header("🌱 Crop Advisory")
-
-    crop = st.selectbox("Select Crop", ["Wheat", "Rice", "Cotton"])
-    stage = st.selectbox("Growth Stage", ["Sowing", "Vegetative", "Flowering"])
-
-    st.success(
-        f"Recommended practices for **{crop}** during **{stage}** stage will be shown here."
-    )
-
-# -------------------------------------------------
-# SCHEMES PAGE
-# -------------------------------------------------
-if page == "Schemes":
-    st.header("🏛️ Government Schemes")
-
-    st.markdown("""
-    ### PM-Kisan Samman Nidhi
-    - ₹6000 per year
-    - Direct bank transfer
-    - Eligibility: Small & marginal farmers
-    - Apply via: https://pmkisan.gov.in
-    """)
-
-    st.markdown("""
-    ### Crop Insurance (PMFBY)
-    - Protection against crop loss
-    - Low premium rates
-    - Apply through banks
-    """)
-
-# -------------------------------------------------
-# ABOUT PAGE
-# -------------------------------------------------
-if page == "About":
-    st.header("ℹ️ About KisanSense GenAI")
-    st.write(
-        "KisanSense GenAI is built to bridge the knowledge gap between "
-        "agricultural experts and farmers using AI-inspired advisory systems. "
-        "The platform is modular, scalable, and designed for real-world rural use."
-    )
-
-    st.markdown("### 🔮 Future Scope")
-    st.write(
-        "- Integration with Large Language Models (LLMs)\n"
-        "- Offline FAISS-based knowledge retrieval\n"
-        "- Voice-based interaction\n"
-        "- District-specific advisory"
-    )
-
-# -------------------------------------------------
-# FOOTER
-# -------------------------------------------------
-st.divider()
-st.caption("© 2026 KisanSense GenAI | AI for Farmers 🌾")
 
 
 
