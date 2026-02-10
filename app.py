@@ -1,17 +1,31 @@
 import streamlit as st
+import os
+import google.generativeai as genai
 
-st.set_page_config(
-    page_title="KisanSense GenAI",
-    layout="centered"
-)
+# Page config
+st.set_page_config(page_title="KisanSense GenAI", layout="centered")
 
 st.title("🌾 KisanSense GenAI")
 st.write("AI-Powered Agricultural Advisory Assistant")
 
-st.divider()
+# Configure Gemini using Streamlit Secrets
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+model = genai.GenerativeModel("gemini-pro")
 
 query = st.text_input("Enter your farming question")
 
 if query:
-    st.info("Processing your query...")
-    st.success("Your AI-based agricultural advice will appear here.")
+    with st.spinner("Thinking like an agriculture expert..."):
+        prompt = f"""
+You are an expert agricultural advisor in India.
+Answer the farmer's question in simple, clear language.
+Give practical and actionable advice.
+
+Question: {query}
+"""
+        response = model.generate_content(prompt)
+
+    st.subheader("🤖 AI Recommendation")
+    st.success(response.text)
+
+
