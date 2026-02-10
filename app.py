@@ -10,7 +10,9 @@ st.write("AI-Powered Agricultural Advisory Assistant")
 
 # Configure Gemini using Streamlit Secrets
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-pro")
+
+# ✅ UPDATED MODEL (FIXES ERROR)
+model = genai.GenerativeModel("models/gemini-1.5-flash")
 
 query = st.text_input("Enter your farming question")
 
@@ -27,5 +29,7 @@ Question: {query}
 
     st.subheader("🤖 AI Recommendation")
     st.success(response.text)
+
+
 
 
